@@ -1,5 +1,5 @@
 using UnityEngine;
-
+using UnityEngine.SceneManagement;
 public class Ship : MonoBehaviour
 {
     public float moveSpeed=5f;
@@ -12,6 +12,11 @@ public class Ship : MonoBehaviour
 
     // Update is called once per frame
     void Update()
+    {
+        shipMovement();
+        
+    }
+    void shipMovement()
     {
         // Move forward with 'W' key
         if (Input.GetKey(KeyCode.W))
@@ -37,4 +42,6 @@ public class Ship : MonoBehaviour
             transform.Rotate(0,0,-rotationSpeed);
         }
     }
+ 
+
 }
