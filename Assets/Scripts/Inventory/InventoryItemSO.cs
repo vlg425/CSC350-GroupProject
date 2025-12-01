@@ -9,7 +9,7 @@ public class InventoryItemSO : ScriptableObject
     
     [Header("Visuals")]
     public Sprite icon;
-    public Color color = Color.white; // New Color Field
+    public Color color = Color.white; // Tint support
 
     [Header("Shape Definition")]
     [Tooltip("Check the box for Solid, Uncheck for Empty. Index = Row * Width + Col")]

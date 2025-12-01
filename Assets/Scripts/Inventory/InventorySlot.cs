@@ -4,7 +4,7 @@ using UnityEngine.EventSystems;
 
 public class InventorySlot : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler, IPointerExitHandler
 {
-    private Inventory myInventory; // The grid this slot belongs to
+    private Inventory myInventory;
     private Image slotImage;
     private Color defaultColor;
 
@@ -12,7 +12,6 @@ public class InventorySlot : MonoBehaviour, IPointerClickHandler, IPointerEnterH
     public int X { get; private set; }
     public int Y { get; private set; }
 
-    // Initialize with the specific Inventory Grid instance
     public void Initialize(Inventory inventory, int x, int y)
     {
         myInventory = inventory;
@@ -25,16 +24,15 @@ public class InventorySlot : MonoBehaviour, IPointerClickHandler, IPointerEnterH
 
     public void OnPointerClick(PointerEventData eventData)
     {
+        // Only allow Left Click to place items
         if (eventData.button == PointerEventData.InputButton.Left)
         {
-            // Tell the Global Manager that a slot in THIS inventory was clicked
             InventoryManager.Instance.OnSlotClicked(myInventory, this);
         }
     }
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        // Tell Manager we are hovering over THIS inventory
         InventoryManager.Instance.OnSlotEnter(myInventory);
     }
 
