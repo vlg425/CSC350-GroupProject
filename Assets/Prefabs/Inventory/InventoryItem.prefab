@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &5596022747517694375
+--- !u!1 &5975752968153702773
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,24 +8,25 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 1497633166362029270}
-  - component: {fileID: 1260530736682374279}
-  - component: {fileID: 1565096241614906432}
-  - component: {fileID: 3723384117534325502}
+  - component: {fileID: 2610166178672297093}
+  - component: {fileID: 5751327447215473489}
+  - component: {fileID: 832462853058812181}
+  - component: {fileID: 3193177493398572499}
+  - component: {fileID: 8189002552507190975}
   m_Layer: 5
-  m_Name: InventorySlot
+  m_Name: InventoryItem
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!224 &1497633166362029270
+--- !u!224 &2610166178672297093
 RectTransform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5596022747517694375}
+  m_GameObject: {fileID: 5975752968153702773}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
@@ -38,35 +39,35 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!222 &1260530736682374279
+--- !u!222 &5751327447215473489
 CanvasRenderer:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5596022747517694375}
+  m_GameObject: {fileID: 5975752968153702773}
   m_CullTransparentMesh: 1
---- !u!114 &1565096241614906432
+--- !u!114 &832462853058812181
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5596022747517694375}
+  m_GameObject: {fileID: 5975752968153702773}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0.54088044, g: 0.40296724, b: 0.30445784, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 073da2affa35ff248a90cac2362d9f9d, type: 3}
+  m_Sprite: {fileID: 0}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -76,16 +77,28 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!114 &3723384117534325502
+--- !u!114 &3193177493398572499
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5596022747517694375}
+  m_GameObject: {fileID: 5975752968153702773}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1383f86a9a0e0e3479117641f9aa5b7a, type: 3}
+  m_Script: {fileID: 11500000, guid: d1068b60b81917645b11fa04e4187b20, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ItemInfoDisplay
-  storedItem: {fileID: 0}
+  m_EditorClassIdentifier: Assembly-CSharp::InventoryItem
+  itemData: {fileID: 0}
+--- !u!225 &8189002552507190975
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5975752968153702773}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0

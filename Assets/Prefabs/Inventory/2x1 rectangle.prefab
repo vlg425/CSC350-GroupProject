@@ -11,6 +11,8 @@ GameObject:
   - component: {fileID: 4128859819582661181}
   - component: {fileID: 34728660362712418}
   - component: {fileID: 333393834181305102}
+  - component: {fileID: 8044095414179918245}
+  - component: {fileID: 7444056681439160138}
   m_Layer: 5
   m_Name: 2x1 rectangle
   m_TagString: Untagged
@@ -75,3 +77,28 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!225 &8044095414179918245
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5436488479660240531}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
+--- !u!114 &7444056681439160138
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5436488479660240531}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d1068b60b81917645b11fa04e4187b20, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::InventoryItem
+  itemData: {fileID: 11400000, guid: 4c66a33018a1a2c48bb742e64900de46, type: 2}

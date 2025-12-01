@@ -1,99 +1,58 @@
 using UnityEngine;
-using TMPro;
 using UnityEngine.UI;
-using UnityEngine.EventSystems; 
+using UnityEngine.EventSystems;
 
-public class InventorySlot : MonoBehaviour, 
-    IPointerClickHandler, 
-    IPointerEnterHandler, 
-    IPointerExitHandler,
-    IDropHandler 
+public class InventorySlot : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler, IPointerExitHandler
 {
-    [SerializeField] private TMP_Text InventorySlotText; 
-    private InventoryManager inventoryManager;
-    private Image InventorySlotImage; 
-    private Color defaultColor = Color.white;
-    
-    private int columns; // Set in Initialize()
-    
-    private int x; // Row (slow changing)
-    private int y; // Column (fast changing)
+    private Inventory myInventory;
+    private Image slotImage;
+    private Color defaultColor;
 
-    public int X => x; 
-    public int Y => y; 
-    
-    void Awake()
-    {
-        InventorySlotImage = GetComponent<Image>();
-        if (InventorySlotImage != null)
-        {
-            defaultColor = InventorySlotImage.color;
-        }
-    }
-    
-    void Start()
-    {
-        // Start is empty; initialization is moved to Initialize()
-    }
+    public InventoryItem storedItem; 
+    public int X { get; private set; }
+    public int Y { get; private set; }
 
-    public void Initialize(InventoryManager manager, int columnCount)
+    public void Initialize(Inventory inventory, int x, int y)
     {
-        inventoryManager = manager;
-        columns = columnCount; // <-- Setting the column count here prevents DivideByZeroException
+        myInventory = inventory;
+        X = x;
+        Y = y;
         
-        // Now that 'columns' is guaranteed to be non-zero, it's safe to run this:
-        UpdatePositionText();
+        slotImage = GetComponent<Image>();
+        defaultColor = slotImage.color;
     }
-
-    // --- MOUSE INTERACTION METHODS ---
 
     public void OnPointerClick(PointerEventData eventData)
     {
-        if (inventoryManager != null)
+        // Only allow Left Click to place items
+        if (eventData.button == PointerEventData.InputButton.Left)
         {
-            // Notify the manager of the click event
+            InventoryManager.Instance.OnSlotClicked(myInventory, this);
         }
     }
-    
+
     public void OnPointerEnter(PointerEventData eventData)
     {
-        if (InventorySlotImage != null) InventorySlotImage.color = new Color(0.7f, 0.7f, 0.7f, 1f);
+        InventoryManager.Instance.OnSlotEnter(myInventory);
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
-        if (InventorySlotImage != null) InventorySlotImage.color = defaultColor;
+        InventoryManager.Instance.OnSlotExit(myInventory);
     }
 
-    public void OnDrop(PointerEventData eventData)
+    public void SetHighlight(Color color)
     {
-        if (eventData.pointerDrag != null)
-        {
-            eventData.pointerDrag.GetComponent<RectTransform>().position = this.GetComponent<RectTransform>().position;
-            // Additional logic for updating inventory data can be added here
-        }
+        slotImage.color = color;
     }
 
-    // --- UTILITY METHODS ---
-
-    public void UpdatePositionText()
+    public void ResetColor()
     {
-        // Safety check included for robustness
-        if (columns == 0) return; 
-        
-        int index = transform.GetSiblingIndex();
-        
-        int x = index / columns; // Row
-        int y = index % columns; // Column
-        
-        if (InventorySlotText != null)
-        {
-            InventorySlotText.text = $"({x}, {y})"; 
-        }
+        slotImage.color = defaultColor;
     }
-    
-    public int GetIndex()
+
+    public bool IsEmpty()
     {
-        return transform.GetSiblingIndex();
+        return storedItem == null;
     }
 }
