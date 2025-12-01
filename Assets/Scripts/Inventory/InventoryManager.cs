@@ -1,79 +1,137 @@
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.EventSystems;
 using System.Collections.Generic;
 
 public class InventoryManager : MonoBehaviour
 {
-    // --- Configuration in the Inspector (RENAMED FIELDS) ---
+    public static InventoryManager Instance;
 
-
-    public int width = 3;   
-    public int height = 4;
-    public float slotSize = 100f;
-
-    public GameObject inventorySlotPrefab; 
-   
-
-    // --- Private Fields ---
-    private InventoryGrid inventoryGrid; 
-    private GridLayoutGroup gridLayoutGroup;
-    private InventorySlot[,] inventorySlots; 
-
+    // --- State ---
+    private InventoryItem selectedItem;
+    private Inventory currentHoveredInventory;
     
+    // --- REFERENCES ---
+    [Header("Drag & Drop")]
+    public Transform dragLayer; // ASSIGN THIS IN INSPECTOR!
+
+    public Color validHighlight = new Color(0, 1, 0, 0.2f);
+    public Color invalidHighlight = new Color(1, 0, 0, 0.2f);
+
     void Awake()
-    {   
-        // Grid now uses (Rows, Columns) in its constructor
-        inventoryGrid = new InventoryGrid(height, width, slotSize);
-        // FIX: Array initialized as [Rows, Columns]
-        inventorySlots = new InventorySlot[height, width]; 
-        
-        gridLayoutGroup = GetComponent<GridLayoutGroup>();
-        
-        if (gridLayoutGroup == null)
-        {
-            Debug.LogError("InventoryManager requires a GridLayoutGroup component on the same GameObject.");
-            return;
-        }
-
-        ConfigureGridLayout();
-        GenerateSlots();
-    }
-    
-    private void ConfigureGridLayout()
     {
-        gridLayoutGroup.cellSize = new Vector2(slotSize, slotSize);
-        gridLayoutGroup.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
-        // The GridLayoutGroup still defines its layout by the Column Count (width)
-        gridLayoutGroup.constraintCount = width; 
+        Instance = this;
     }
 
-    private void GenerateSlots()
+    void Update()
     {
-        int totalSlots = height * width; 
-
-        for (int i = 0; i < totalSlots; i++)
+        if (selectedItem != null)
         {
-            GameObject inventorySlot = Instantiate(inventorySlotPrefab, transform);
-            
-            InventorySlot inventorySlotScript = inventorySlot.GetComponent<InventorySlot>();
-            
-            if (inventorySlotScript != null)
+            selectedItem.transform.position = Input.mousePosition;
+
+            if (Input.GetMouseButtonDown(1))
             {
-                // Pass the Column Count
-                inventorySlotScript.Initialize(this, width); 
-                
-                inventorySlotScript.UpdatePositionText(); 
-                
-                // Read from the slot's public properties:
-                int x = inventorySlotScript.X; // Row
-                int y = inventorySlotScript.Y; // Column
-                
-                // Store in [Row, Column] order
-                inventorySlots[x, y] = inventorySlotScript; 
-                inventorySlot.name = $"Slot ({x},{y})";
+                selectedItem.Rotate();
+            }
+
+            HandleHighlighting();
+        }
+    }
+
+    // --- INTERACTION ---
+
+    public void OnItemClicked(InventoryItem item)
+    {
+        if (selectedItem == null)
+        {
+            PickUpItem(item);
+        }
+        else
+        {
+            if (currentHoveredInventory != null)
+            {
+                TryPlaceItem(currentHoveredInventory);
             }
         }
     }
-    
+
+    public void OnSlotClicked(Inventory inventory, InventorySlot slot)
+    {
+        if (selectedItem != null)
+        {
+            TryPlaceItem(inventory);
+        }
+    }
+
+    public void OnSlotEnter(Inventory inventory)
+    {
+        currentHoveredInventory = inventory;
+    }
+
+    public void OnSlotExit(Inventory inventory)
+    {
+        if (currentHoveredInventory == inventory)
+        {
+            currentHoveredInventory.ClearHighlights();
+            currentHoveredInventory = null;
+        }
+    }
+
+    // --- LOGIC ---
+
+    private void PickUpItem(InventoryItem item)
+    {
+        selectedItem = item;
+        
+        Inventory[] allInventories = FindObjectsOfType<Inventory>();
+        foreach(var inv in allInventories)
+        {
+            if (inv.ContainsItem(item))
+            {
+                inv.ClearSlotReferences(item);
+                break;
+            }
+        }
+
+        selectedItem.SetPickedUpState(true);
+        
+        // FIX: Parent to the specific DragLayer
+        if (dragLayer != null)
+        {
+            selectedItem.transform.SetParent(dragLayer);
+        }
+        else
+        {
+            // Fallback if you forgot to assign it
+            selectedItem.transform.SetParent(this.transform.root); 
+        }
+
+        // FIX: Ensure scale is reset, sometimes parenting changes this
+        selectedItem.transform.localScale = Vector3.one; 
+    }
+
+    private void TryPlaceItem(Inventory targetInventory)
+    {
+        Vector2Int origin = targetInventory.GetGridIndexFromMouse(selectedItem);
+
+        if (targetInventory.CheckIfItemFits(selectedItem, origin.x, origin.y))
+        {
+            targetInventory.PlaceItem(selectedItem, origin.x, origin.y);
+            
+            selectedItem.SetPickedUpState(false);
+            selectedItem = null;
+            targetInventory.ClearHighlights();
+        }
+        else
+        {
+            Debug.Log("Item does not fit.");
+        }
+    }
+
+    private void HandleHighlighting()
+    {
+        if (currentHoveredInventory != null)
+        {
+            currentHoveredInventory.HighlightGrid(selectedItem, validHighlight, invalidHighlight);
+        }
+    }
 }

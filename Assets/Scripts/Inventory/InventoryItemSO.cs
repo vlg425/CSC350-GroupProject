@@ -1,20 +1,17 @@
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "NewItemSO", menuName = "Inventory/ItemSO")]
+[CreateAssetMenu(fileName = "New Item", menuName = "Inventory/Item")]
 public class InventoryItemSO : ScriptableObject
 {
-    [Header("Item Data")]
-    public int itemID = 0;
-    public string itemName = "New Item";
-    [TextArea(3, 5)]
-    public string description = "Item description here.";
-
-    [Header("Dimensions")]
-    // Renamed for clarity: height affects the Row dimension (X-index)
-    public int height = 1; 
-    // Renamed for clarity: width affects the Column dimension (Y-index)
-    public int width = 1;  
+    [Header("Grid Data")]
+    [Min(1)] public int width = 1;
+    [Min(1)] public int height = 1;
     
     [Header("Visuals")]
-    public Sprite icon; 
+    public Sprite icon;
+    public Color color = Color.white; // New Color Field
+
+    [Header("Shape Definition")]
+    [Tooltip("Check the box for Solid, Uncheck for Empty. Index = Row * Width + Col")]
+    public bool[] shape; 
 }
