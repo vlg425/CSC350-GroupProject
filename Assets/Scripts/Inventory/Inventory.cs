@@ -1,222 +1,226 @@
 using UnityEngine;
-using UnityEngine.UI;
 using System.Collections.Generic;
 using System.IO; 
 
 public class Inventory : MonoBehaviour
 {
-    // ... (Config / References / Awake / Save System - Keep all this unchanged) ...
-    [Header("Grid Config")]
-    public string inventoryID = "PlayerInventory"; 
-    public int width = 3;  
-    public int height = 4; 
+    [Header("Template (Optional)")]
+    public InventoryConfigSO config; 
+
+    [Header("Config")]
+    public string inventoryName = "PlayerInventory"; 
+    public int width = 3, height = 4; 
     public float slotSize = 100f;
     
-    [Header("References")]
+    [Header("Refs")]
     public GameObject inventorySlotPrefab;
     public GameObject inventoryItemPrefab; 
-    public Transform slotsContainer; 
-    public Transform itemsContainer; 
+    public Transform slotsContainer, itemsContainer; 
+
+    // Now uses the GLOBAL struct defined at the bottom of this file
+    public List<StartingItem> startingItems;
 
     private InventorySlot[,] inventorySlots;
-    private List<InventorySlot> currentlyHighlighted = new List<InventorySlot>();
+    private List<InventorySlot> highlights = new List<InventorySlot>();
     private RectTransform slotsRect;
 
     void Awake()
     {
+        if (config != null)
+        {
+            inventoryName = config.inventoryName;
+            width = config.width;
+            height = config.height;
+            slotSize = config.slotSize;
+            startingItems = new List<StartingItem>(config.startingItems);
+        }
+
         inventorySlots = new InventorySlot[height, width];
         slotsRect = slotsContainer.GetComponent<RectTransform>();
-        GenerateSlots();
+        GenerateGrid(); 
     }
 
-    // ... (Keep Save/Load Code Logic Same as Before) ...
-    [System.Serializable] public class InventorySaveData { public List<ItemSaveData> items = new List<ItemSaveData>(); }
-    [System.Serializable] public struct ItemSaveData { public string itemName; public int x; public int y; public bool isRotated; }
-    public void QuickSave() => SaveInventory();
-    public void QuickLoad() => LoadInventory();
-    
-    public void SaveInventory() {
-        InventorySaveData saveData = new InventorySaveData();
-        foreach (Transform child in itemsContainer) {
-            InventoryItem item = child.GetComponent<InventoryItem>();
-            if (item != null) {
-                ItemSaveData data = new ItemSaveData { itemName = item.itemData.name, x = item.GridStartX, y = item.GridStartY, isRotated = item.IsRotated };
-                saveData.items.Add(data);
-            }
-        }
-        string json = JsonUtility.ToJson(saveData, true);
-        File.WriteAllText(Application.persistentDataPath + $"/{inventoryID}.json", json);
-        Debug.Log($"Saved to {Application.persistentDataPath}");
-    }
-    public void LoadInventory() {
-        string path = Application.persistentDataPath + $"/{inventoryID}.json";
-        if (!File.Exists(path)) return;
-        string json = File.ReadAllText(path);
-        InventorySaveData saveData = JsonUtility.FromJson<InventorySaveData>(json);
-        ClearAllItems();
-        foreach (ItemSaveData data in saveData.items) {
-            InventoryItemSO itemSO = InventoryManager.Instance.GetItemByName(data.itemName);
-            if (itemSO != null) {
-                GameObject newItemObj = Instantiate(inventoryItemPrefab, transform.root);
-                InventoryItem itemScript = newItemObj.GetComponent<InventoryItem>();
-                itemScript.Initialize(itemSO);
-                if (data.isRotated) itemScript.Rotate();
-                PlaceItem(itemScript, data.x, data.y);
-            }
-        }
-    }
-    public void ClearAllItems() {
-        foreach (Transform child in itemsContainer) Destroy(child.gameObject);
-        for (int r = 0; r < height; r++) { for (int c = 0; c < width; c++) { inventorySlots[r, c].storedItem = null; } }
-    }
-
-    // --- GRID MATH & LOGIC ---
-
-    public Vector2Int GetGridIndexFromMouse(InventoryItem item)
+    void Start()
     {
-        Vector2 localMouse;
-        RectTransformUtility.ScreenPointToLocalPointInRectangle(slotsRect, Input.mousePosition, null, out localMouse);
-        Vector2 slot0Pos = inventorySlots[0, 0].transform.localPosition;
-        Vector2 relativePos = localMouse - slot0Pos;
-        float gridX = relativePos.x / slotSize;
-        float gridY = -relativePos.y / slotSize; 
-        float topLeftX = gridX - ((item.Width - 1) / 2f);
-        float topLeftY = gridY - ((item.Height - 1) / 2f);
-        int finalX = Mathf.RoundToInt(topLeftY); 
-        int finalY = Mathf.RoundToInt(topLeftX); 
-        return new Vector2Int(finalX, finalY);
+        string path = Application.persistentDataPath + $"/{inventoryName}.json";
+        if (File.Exists(path)) QuickLoad();
+        else SpawnStartingItems();
     }
 
-    // --- NEW: Better Logic to find the SINGLE item blocking us ---
-    public InventoryItem GetObstructingItem(InventoryItem item, int startRow, int startCol)
+    public void SpawnStartingItems()
     {
-        InventoryItem foundObs = null;
-
-        for (int r = 0; r < item.Height; r++)
+        foreach (var startItem in startingItems)
         {
-            for (int c = 0; c < item.Width; c++)
+            if (startItem.item != null)
             {
-                if (!IsPartOfShape(item, r, c)) continue;
+                var obj = Instantiate(inventoryItemPrefab, transform.root);
+                var itemScript = obj.GetComponent<InventoryItem>();
+                itemScript.Initialize(startItem.item);
+                for (int i = 0; i < startItem.rotation; i++) itemScript.Rotate();
 
-                int rPos = startRow + r;
-                int cPos = startCol + c;
-
-                if (!IsWithinGrid(rPos, cPos)) return null; // Out of bounds = no swap possible
-
-                if (!inventorySlots[rPos, cPos].IsEmpty() && inventorySlots[rPos, cPos].storedItem != item)
-                {
-                    InventoryItem detected = inventorySlots[rPos, cPos].storedItem;
-                    
-                    if (foundObs == null)
-                    {
-                        foundObs = detected; // Found first blocker
-                    }
-                    else if (foundObs != detected)
-                    {
-                        return null; // Found a SECOND different blocker. Cannot swap with two things at once!
-                    }
-                }
+                if (IsBounds(startItem.x, startItem.y)) PlaceItem(itemScript, startItem.x, startItem.y);
+                else Destroy(obj);
             }
         }
-        return foundObs; // Returns the single item blocking us, or null if none/many
     }
-    // -------------------------------------------------------------
 
-    public bool CheckIfItemFits(InventoryItem item, int startRow, int startCol, InventoryItem itemToIgnore = null)
+    [ContextMenu("Force Restock")]
+    public void Restock()
     {
-        for (int r = 0; r < item.Height; r++)
+        ClearSlotReferences(null); 
+        foreach(Transform t in itemsContainer) Destroy(t.gameObject); 
+        for(int i=0; i<height; i++) for(int j=0; j<width; j++) inventorySlots[i,j].currentItem = null; 
+
+        string path = Application.persistentDataPath + $"/{inventoryName}.json";
+        
+        if (File.Exists(path)) QuickLoad();
+        else
         {
-            for (int c = 0; c < item.Width; c++)
-            {
-                if (!IsPartOfShape(item, r, c)) continue;
+            if (config != null) startingItems = new List<StartingItem>(config.startingItems);
+            SpawnStartingItems();
+        }
+    }
 
-                int rPos = startRow + r;
-                int cPos = startCol + c;
+    private void GenerateGrid()
+    {
+        foreach (Transform t in slotsContainer) Destroy(t.gameObject);
+        for (int i = 0; i < height * width; i++) 
+        {
+            GameObject slotObj = Instantiate(inventorySlotPrefab, slotsContainer);
+            InventorySlot slot = slotObj.GetComponent<InventorySlot>();
+            
+            int r = i / width; int c = i % width;
+            slot.Initialize(this, r, c);
+            slotObj.name = $"Slot ({r},{c})";
+            inventorySlots[r, c] = slot;
 
-                if (!IsWithinGrid(rPos, cPos)) return false;
-                
-                if (!inventorySlots[rPos, cPos].IsEmpty())
-                {
-                    // Ignore ourselves AND the swap target
-                    if (inventorySlots[rPos, cPos].storedItem != item && 
-                        inventorySlots[rPos, cPos].storedItem != itemToIgnore)
-                    {
-                        return false;
-                    }
-                }
+            RectTransform rt = slotObj.GetComponent<RectTransform>();
+            rt.anchorMin = new Vector2(0, 1); rt.anchorMax = new Vector2(0, 1); rt.pivot = new Vector2(0.5f, 0.5f); 
+            float x = (c * slotSize) + (slotSize / 2);
+            float y = -(r * slotSize) - (slotSize / 2);
+            rt.anchoredPosition = new Vector2(x, y);
+        }
+    }
+
+    public Vector2Int MouseToGrid(InventoryItem item)
+    {
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(slotsRect, Input.mousePosition, null, out Vector2 localPos);
+        Vector2 offset = localPos - (Vector2)inventorySlots[0, 0].transform.localPosition;
+        float gridX = offset.x / slotSize; float gridY = -offset.y / slotSize; 
+        return new Vector2Int(Mathf.RoundToInt(gridY - ((item.Height - 1) / 2f)), Mathf.RoundToInt(gridX - ((item.Width - 1) / 2f)));
+    }
+
+    public bool CanPlaceItem(InventoryItem item, int r, int c, InventoryItem ignore = null)
+    {
+        for (int i = 0; i < item.Height; i++) {
+            for (int j = 0; j < item.Width; j++) {
+                if (!item.IsPartOfShape(i, j)) continue;
+                int rr = r + i, cc = c + j;
+                if (!IsBounds(rr, cc)) return false;
+                var slotItem = inventorySlots[rr, cc].currentItem;
+                if (slotItem != null && slotItem != item && slotItem != ignore) return false;
             }
         }
         return true;
     }
 
-    public void PlaceItem(InventoryItem item, int startRow, int startCol)
+    public InventoryItem GetSwapTarget(InventoryItem item, int r, int c)
+    {
+        InventoryItem obs = null;
+        for (int i = 0; i < item.Height; i++) {
+            for (int j = 0; j < item.Width; j++) {
+                if (!item.IsPartOfShape(i, j)) continue;
+                int rr = r + i, cc = c + j;
+                if (!IsBounds(rr, cc)) return null; 
+                var slotItem = inventorySlots[rr, cc].currentItem;
+                if (slotItem != null && slotItem != item) {
+                    if (obs == null) obs = slotItem;
+                    else if (obs != slotItem) return null; 
+                }
+            }
+        }
+        return obs;
+    }
+
+    public void PlaceItem(InventoryItem item, int r, int c)
     {
         item.transform.SetParent(itemsContainer);
-        InventorySlot rootSlot = inventorySlots[startRow, startCol];
-        item.transform.position = rootSlot.transform.position;
+        item.transform.position = inventorySlots[r, c].transform.position;
         item.transform.localScale = Vector3.one;
-        item.SetGridPosition(startRow, startCol);
+        item.SetGridPosition(r, c);
 
-        Vector2 newPos = item.GetComponent<RectTransform>().anchoredPosition;
-        newPos.x += (item.Width - 1) * slotSize / 2;
-        newPos.y -= (item.Height - 1) * slotSize / 2;
-        item.GetComponent<RectTransform>().anchoredPosition = newPos;
+        Vector2 pos = item.GetComponent<RectTransform>().anchoredPosition;
+        pos.x += (item.Width - 1) * slotSize / 2;
+        pos.y -= (item.Height - 1) * slotSize / 2;
+        item.GetComponent<RectTransform>().anchoredPosition = pos;
 
-        for (int r = 0; r < item.Height; r++)
-        {
-            for (int c = 0; c < item.Width; c++)
-            {
-                if (IsPartOfShape(item, r, c))
-                {
-                    inventorySlots[startRow + r, startCol + c].storedItem = item;
-                }
+        for (int i = 0; i < item.Height; i++) {
+            for (int j = 0; j < item.Width; j++) {
+                if (item.IsPartOfShape(i, j)) inventorySlots[r + i, c + j].currentItem = item;
             }
         }
     }
 
-    public void HighlightGrid(InventoryItem item, Color color)
+    public void HighlightSlots(InventoryItem item, Color color)
     {
         ClearHighlights();
-        Vector2Int origin = GetGridIndexFromMouse(item);
-        
-        for (int r = 0; r < item.Height; r++)
-        {
-            for (int c = 0; c < item.Width; c++)
-            {
-                if (!IsPartOfShape(item, r, c)) continue;
-                int rPos = origin.x + r;
-                int cPos = origin.y + c;
-                if (IsWithinGrid(rPos, cPos))
-                {
-                    InventorySlot slot = inventorySlots[rPos, cPos];
-                    slot.SetHighlight(color);
-                    currentlyHighlighted.Add(slot);
+        Vector2Int pos = MouseToGrid(item);
+        for (int i = 0; i < item.Height; i++) {
+            for (int j = 0; j < item.Width; j++) {
+                if (!item.IsPartOfShape(i, j)) continue;
+                int rr = pos.x + i, cc = pos.y + j;
+                if (IsBounds(rr, cc)) {
+                    inventorySlots[rr, cc].SetColor(color);
+                    highlights.Add(inventorySlots[rr, cc]);
                 }
             }
         }
     }
 
-    // ... (Utilities: ClearHighlights, ClearSlotReferences, ContainsItem, IsWithinGrid, IsPartOfShape, GenerateSlots - Keep Unchanged) ...
-    public void ClearHighlights() { foreach (InventorySlot slot in currentlyHighlighted) slot.ResetColor(); currentlyHighlighted.Clear(); }
-    public void ClearSlotReferences(InventoryItem item) { for (int r = 0; r < height; r++) { for (int c = 0; c < width; c++) { if (inventorySlots[r, c].storedItem == item) inventorySlots[r, c].storedItem = null; } } }
-    public bool ContainsItem(InventoryItem item) { for (int r = 0; r < height; r++) { for (int c = 0; c < width; c++) { if (inventorySlots[r, c].storedItem == item) return true; } } return false; }
-    private bool IsWithinGrid(int r, int c) { return r >= 0 && r < height && c >= 0 && c < width; }
-    private bool IsPartOfShape(InventoryItem item, int r, int c) {
-        if (item.CurrentShape == null || item.CurrentShape.Length == 0) return true;
-        int index = r * item.Width + c;
-        if (index >= 0 && index < item.CurrentShape.Length) return item.CurrentShape[index];
-        return true; 
-    }
-    private void GenerateSlots() {
-        foreach (Transform child in slotsContainer) Destroy(child.gameObject);
-        int totalSlots = height * width; 
-        for (int i = 0; i < totalSlots; i++) {
-            GameObject newSlotObj = Instantiate(inventorySlotPrefab, slotsContainer); 
-            InventorySlot slotScript = newSlotObj.GetComponent<InventorySlot>();
-            int r = i / width; int c = i % width;
-            slotScript.Initialize(this, r, c); 
-            newSlotObj.name = $"Slot ({r},{c})";
-            inventorySlots[r, c] = slotScript;
+    public void ClearHighlights() { foreach (var s in highlights) s.ResetColor(); highlights.Clear(); }
+    public void ClearSlotReferences(InventoryItem item) { for (int i = 0; i < height; i++) for (int j = 0; j < width; j++) if (inventorySlots[i, j].currentItem == item) inventorySlots[i, j].currentItem = null; }
+    public bool ContainsItem(InventoryItem item) { for (int i = 0; i < height; i++) for (int j = 0; j < width; j++) if (inventorySlots[i, j].currentItem == item) return true; return false; }
+    private bool IsBounds(int r, int c) => r >= 0 && r < height && c >= 0 && c < width;
+
+    // --- Save System ---
+    [System.Serializable] class SaveData { public List<ItemData> items = new List<ItemData>(); }
+    [System.Serializable] struct ItemData { public string id; public int x, y, rot; }
+    public void QuickSave() {
+        SaveData data = new SaveData();
+        foreach (Transform t in itemsContainer) {
+            var item = t.GetComponent<InventoryItem>();
+            if (item) data.items.Add(new ItemData { id = item.itemData.name, x = item.GridX, y = item.GridY, rot = item.RotationIndex });
         }
+        File.WriteAllText(Application.persistentDataPath + $"/{inventoryName}.json", JsonUtility.ToJson(data));
+        Debug.Log("Saved " + inventoryName);
     }
+    public void QuickLoad() {
+        string path = Application.persistentDataPath + $"/{inventoryName}.json";
+        if (!File.Exists(path)) return;
+        ClearSlotReferences(null); 
+        foreach(Transform t in itemsContainer) Destroy(t.gameObject); 
+        for(int i=0; i<height; i++) for(int j=0; j<width; j++) inventorySlots[i,j].currentItem = null; 
+        SaveData data = JsonUtility.FromJson<SaveData>(File.ReadAllText(path));
+        foreach (var d in data.items) {
+            var so = InventoryManager.Instance.GetItemByName(d.id);
+            if (so) {
+                var obj = Instantiate(inventoryItemPrefab, transform.root);
+                var item = obj.GetComponent<InventoryItem>();
+                item.Initialize(so);
+                for(int k=0; k<d.rot; k++) item.Rotate();
+                PlaceItem(item, d.x, d.y);
+            }
+        }
+        Debug.Log("Loaded " + inventoryName);
+    }
+}
+
+// --- GLOBAL STRUCT (Outside Class) ---
+[System.Serializable]
+public struct StartingItem
+{
+    public InventoryItemSO item;
+    public int x;
+    public int y;
+    [Range(0,3)] public int rotation; 
 }

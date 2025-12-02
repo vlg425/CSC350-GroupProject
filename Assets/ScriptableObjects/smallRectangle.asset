@@ -15,4 +15,5 @@ MonoBehaviour:
   width: 2
   height: 1
   icon: {fileID: 21300000, guid: 3152398927c7ec34fbc214fe275d8edf, type: 3}
+  color: {r: 1, g: 0.7989877, b: 0, a: 1}
   shape: 0101

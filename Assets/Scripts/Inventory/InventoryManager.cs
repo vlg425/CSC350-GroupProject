@@ -7,178 +7,173 @@ public class InventoryManager : MonoBehaviour
 {
     public static InventoryManager Instance;
 
-    public List<InventoryItemSO> itemLibrary; 
+    [Header("References")]
+    public List<InventoryItemSO> itemDatabase; 
+    public Transform heldItemLayer; 
 
-    private InventoryItem selectedItem; 
+    [Header("Highlight Colors")]
+    public Color validColor = new Color(0, 1, 0, 0.5f);     
+    public Color invalidColor = new Color(1, 0, 0, 0.5f);   
+    public Color swapColor = new Color(1, 0.5f, 0, 0.5f);   
+
+    private InventoryItem heldItem; 
     private Inventory currentHoveredInventory; 
-    
-    [Header("Drag & Drop")]
-    public Transform dragLayer; 
+    private Inventory lastHighlightedInventory; 
 
-    [Header("Validation Colors")]
-    public Color validHighlight = new Color(0, 1, 0, 0.5f);     
-    public Color invalidHighlight = new Color(1, 0, 0, 0.5f);   
-    public Color swapHighlight = new Color(1, 0.5f, 0, 0.5f);   
-
-    void Awake()
-    {
-        Instance = this;
-    }
+    void Awake() => Instance = this;
 
     void Update()
     {
-        if (selectedItem != null)
-        {
-            selectedItem.transform.position = Input.mousePosition;
-            if (Input.GetMouseButtonDown(1)) selectedItem.Rotate();
-            if (Input.GetKeyDown(KeyCode.Alpha0)) { Destroy(selectedItem.gameObject); selectedItem = null; }
+        if (heldItem == null) return;
 
-            HandleHighlighting();
-        }
+        heldItem.transform.position = Input.mousePosition;
+
+        if (Input.GetMouseButtonDown(1)) heldItem.Rotate();
+        if (Input.GetKeyDown(KeyCode.Alpha0)) DestroyItem(heldItem);
+
+        UpdateHighlight();
     }
 
     public void OnItemClicked(InventoryItem item, PointerEventData eventData)
     {
-        // Middle Click -> Delete
         if (eventData.button == PointerEventData.InputButton.Middle)
         {
-            if (selectedItem == item) { Destroy(selectedItem.gameObject); selectedItem = null; return; }
-            Inventory owner = item.GetComponentInParent<Inventory>();
-            if (owner != null) owner.ClearSlotReferences(item);
-            Destroy(item.gameObject);
+            DestroyItem(item);
             return;
         }
 
-        // Left Click -> Pickup / Place
         if (eventData.button == PointerEventData.InputButton.Left)
         {
-            if (selectedItem == null)
-            {
-                PickUpItem(item);
-            }
-            else
-            {
-                Inventory targetInv = GetTargetInventory();
-                if (targetInv != null)
-                {
-                    TryPlaceItem(targetInv);
-                }
-            }
+            if (heldItem == null) PickUpItem(item);
+            else PlaceItemLogic();
         }
     }
 
-    // --- HELPER: DETECTS ITEMS, SLOTS, OR BACKGROUND ---
-    private Inventory GetTargetInventory()
+    public void OnSlotClicked(Inventory inventory)
     {
-        if (currentHoveredInventory != null) return currentHoveredInventory;
-
-        PointerEventData pointerData = new PointerEventData(EventSystem.current)
-        {
-            position = Input.mousePosition
-        };
-
-        List<RaycastResult> results = new List<RaycastResult>();
-        EventSystem.current.RaycastAll(pointerData, results);
-
-        foreach (RaycastResult result in results)
-        {
-            InventoryItem item = result.gameObject.GetComponent<InventoryItem>();
-            if (item != null) return item.GetComponentInParent<Inventory>();
-
-            InventorySlot slot = result.gameObject.GetComponent<InventorySlot>();
-            if (slot != null) return slot.GetComponentInParent<Inventory>();
-
-            Inventory inv = result.gameObject.GetComponent<Inventory>();
-            if (inv != null) return inv;
-        }
-
-        return null;
+        if (heldItem != null) PlaceItemLogic();
     }
-    // ------------------------------------------------
 
-    public void OnSlotClicked(Inventory inventory, InventorySlot slot)
-    {
-        if (selectedItem != null) TryPlaceItem(inventory);
-    }
-    public void OnSlotEnter(Inventory inventory) { currentHoveredInventory = inventory; }
+    public void OnSlotEnter(Inventory inventory) => currentHoveredInventory = inventory;
+    
     public void OnSlotExit(Inventory inventory)
     {
         if (currentHoveredInventory == inventory)
         {
-            currentHoveredInventory.ClearHighlights();
-            currentHoveredInventory = null;
+            currentHoveredInventory = null; // Visuals cleared by UpdateHighlight
         }
     }
 
-    private void PickUpItem(InventoryItem item)
+    public void PickUpItem(InventoryItem item)
     {
-        selectedItem = item;
+        heldItem = item;
+        var oldInv = item.GetComponentInParent<Inventory>();
+        if (oldInv != null) oldInv.ClearSlotReferences(item);
+
+        heldItem.SetPickedUpState(true);
+        if (heldItemLayer != null) heldItem.transform.SetParent(heldItemLayer);
         
-        // --- FIX IS HERE: Updated to new Unity Syntax ---
-        Inventory[] allInventories = FindObjectsByType<Inventory>(FindObjectsSortMode.None);
-        // ------------------------------------------------
-        
-        foreach(var inv in allInventories) { if (inv.ContainsItem(item)) { inv.ClearSlotReferences(item); break; } }
-        selectedItem.SetPickedUpState(true);
-        if (dragLayer != null) selectedItem.transform.SetParent(dragLayer);
-        selectedItem.transform.localScale = Vector3.one; 
+        // Find other inventories to clear references (if moving between windows)
+        var allInventories = FindObjectsByType<Inventory>(FindObjectsSortMode.None);
+        foreach(var inv in allInventories) 
+        { 
+            if (inv.ContainsItem(item)) 
+            { 
+                inv.ClearSlotReferences(item); 
+                break; 
+            } 
+        }
     }
 
-    private void TryPlaceItem(Inventory targetInventory)
+    private void PlaceItemLogic()
     {
-        Vector2Int origin = targetInventory.GetGridIndexFromMouse(selectedItem);
+        Inventory target = DetectInventory();
+        if (target == null) return;
 
-        // 1. Normal Place
-        if (targetInventory.CheckIfItemFits(selectedItem, origin.x, origin.y))
+        Vector2Int pos = target.MouseToGrid(heldItem);
+
+        // 1. Direct Placement
+        if (target.CanPlaceItem(heldItem, pos.x, pos.y))
         {
-            targetInventory.PlaceItem(selectedItem, origin.x, origin.y);
-            selectedItem.SetPickedUpState(false);
-            selectedItem = null;
-            targetInventory.ClearHighlights();
+            target.PlaceItem(heldItem, pos.x, pos.y);
+            DropItem();
         }
         // 2. Swap Logic
         else
         {
-            InventoryItem overlapItem = targetInventory.GetObstructingItem(selectedItem, origin.x, origin.y);
-
-            if (overlapItem != null && targetInventory.CheckIfItemFits(selectedItem, origin.x, origin.y, overlapItem))
+            InventoryItem blocker = target.GetSwapTarget(heldItem, pos.x, pos.y);
+            if (blocker != null && target.CanPlaceItem(heldItem, pos.x, pos.y, blocker))
             {
-                targetInventory.ClearSlotReferences(overlapItem);
-                targetInventory.PlaceItem(selectedItem, origin.x, origin.y);
-                selectedItem.SetPickedUpState(false);
-                
-                PickUpItem(overlapItem);
-                targetInventory.ClearHighlights();
+                target.ClearSlotReferences(blocker);
+                target.PlaceItem(heldItem, pos.x, pos.y);
+                DropItem();
+                PickUpItem(blocker); 
             }
         }
     }
 
-    private void HandleHighlighting()
+    private void UpdateHighlight()
     {
-        Inventory targetInv = GetTargetInventory();
+        Inventory target = DetectInventory();
 
-        if (targetInv != null)
+        if (lastHighlightedInventory != null && lastHighlightedInventory != target)
         {
-            Vector2Int origin = targetInv.GetGridIndexFromMouse(selectedItem);
+            lastHighlightedInventory.ClearHighlights();
+        }
+        lastHighlightedInventory = target;
 
-            if (targetInv.CheckIfItemFits(selectedItem, origin.x, origin.y))
-            {
-                targetInv.HighlightGrid(selectedItem, validHighlight);
-            }
-            else
-            {
-                InventoryItem overlapItem = targetInv.GetObstructingItem(selectedItem, origin.x, origin.y);
-                if (overlapItem != null && targetInv.CheckIfItemFits(selectedItem, origin.x, origin.y, overlapItem))
-                {
-                    targetInv.HighlightGrid(selectedItem, swapHighlight);
-                }
-                else
-                {
-                    targetInv.HighlightGrid(selectedItem, invalidHighlight);
-                }
-            }
+        if (target == null) return;
+
+        Vector2Int pos = target.MouseToGrid(heldItem);
+
+        if (target.CanPlaceItem(heldItem, pos.x, pos.y))
+        {
+            target.HighlightSlots(heldItem, validColor);
+        }
+        else
+        {
+            InventoryItem blocker = target.GetSwapTarget(heldItem, pos.x, pos.y);
+            bool canSwap = blocker != null && target.CanPlaceItem(heldItem, pos.x, pos.y, blocker);
+            target.HighlightSlots(heldItem, canSwap ? swapColor : invalidColor);
         }
     }
 
-    public InventoryItemSO GetItemByName(string name) { return itemLibrary.Find(i => i.name == name); }
+    private void DropItem()
+    {
+        heldItem.SetPickedUpState(false);
+        heldItem = null;
+        if (lastHighlightedInventory != null) lastHighlightedInventory.ClearHighlights();
+        lastHighlightedInventory = null;
+    }
+
+    private void DestroyItem(InventoryItem item)
+    {
+        if (item == heldItem) 
+        {
+             heldItem = null;
+             if (lastHighlightedInventory != null) lastHighlightedInventory.ClearHighlights();
+        }
+
+        var owner = item.GetComponentInParent<Inventory>();
+        if (owner != null) owner.ClearSlotReferences(item);
+        Destroy(item.gameObject);
+    }
+
+    private Inventory DetectInventory()
+    {
+        if (currentHoveredInventory != null) return currentHoveredInventory;
+
+        PointerEventData pointerData = new PointerEventData(EventSystem.current) { position = Input.mousePosition };
+        List<RaycastResult> results = new List<RaycastResult>();
+        EventSystem.current.RaycastAll(pointerData, results);
+
+        foreach (var result in results)
+        {
+            Inventory inv = result.gameObject.GetComponentInParent<Inventory>();
+            if (inv != null) return inv;
+        }
+        return null;
+    }
+
+    public InventoryItemSO GetItemByName(string name) => itemDatabase.Find(i => i.name == name);
 }

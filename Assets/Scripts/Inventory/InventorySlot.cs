@@ -4,55 +4,26 @@ using UnityEngine.EventSystems;
 
 public class InventorySlot : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler, IPointerExitHandler
 {
-    private Inventory myInventory;
-    private Image slotImage;
-    private Color defaultColor;
+    private Inventory inventory;
+    private Image img;
+    private Color baseColor;
+    public InventoryItem currentItem; 
 
-    public InventoryItem storedItem; 
-    public int X { get; private set; }
-    public int Y { get; private set; }
-
-    public void Initialize(Inventory inventory, int x, int y)
+    public void Initialize(Inventory inv, int x, int y)
     {
-        myInventory = inventory;
-        X = x;
-        Y = y;
-        
-        slotImage = GetComponent<Image>();
-        defaultColor = slotImage.color;
+        this.inventory = inv;
+        img = GetComponent<Image>();
+        baseColor = img.color;
     }
 
-    public void OnPointerClick(PointerEventData eventData)
-    {
-        // Only allow Left Click to place items
-        if (eventData.button == PointerEventData.InputButton.Left)
-        {
-            InventoryManager.Instance.OnSlotClicked(myInventory, this);
-        }
+    public void OnPointerClick(PointerEventData d) {
+        if (d.button == PointerEventData.InputButton.Left) InventoryManager.Instance.OnSlotClicked(inventory);
     }
 
-    public void OnPointerEnter(PointerEventData eventData)
-    {
-        InventoryManager.Instance.OnSlotEnter(myInventory);
-    }
+    public void OnPointerEnter(PointerEventData d) => InventoryManager.Instance.OnSlotEnter(inventory);
+    public void OnPointerExit(PointerEventData d) => InventoryManager.Instance.OnSlotExit(inventory);
 
-    public void OnPointerExit(PointerEventData eventData)
-    {
-        InventoryManager.Instance.OnSlotExit(myInventory);
-    }
-
-    public void SetHighlight(Color color)
-    {
-        slotImage.color = color;
-    }
-
-    public void ResetColor()
-    {
-        slotImage.color = defaultColor;
-    }
-
-    public bool IsEmpty()
-    {
-        return storedItem == null;
-    }
+    public void SetColor(Color c) => img.color = c;
+    public void ResetColor() => img.color = baseColor;
+    public bool IsEmpty() => currentItem == null;
 }
