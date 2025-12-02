@@ -17,7 +17,7 @@ public class Inventory : MonoBehaviour
     public GameObject inventoryItemPrefab; 
     public Transform slotsContainer, itemsContainer; 
 
-    // Now uses the GLOBAL struct defined at the bottom of this file
+    //uses the GLOBAL struct defined at the bottom of this file
     public List<StartingItem> startingItems;
 
     private InventorySlot[,] inventorySlots;
@@ -64,7 +64,7 @@ public class Inventory : MonoBehaviour
         }
     }
 
-    [ContextMenu("Force Restock")]
+    [ContextMenu("Restock")]
     public void Restock()
     {
         ClearSlotReferences(null); 
