@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using System.Collections.Generic;
 
-public class InventoryTesting : MonoBehaviour
+public class Testing : MonoBehaviour
 {
     [Header("References")]
     public GameObject itemPrefab;
