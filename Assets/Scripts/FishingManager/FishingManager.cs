@@ -6,17 +6,37 @@ using UnityEngine.UI;
 /// </summary>
 public class FishingManager : MonoBehaviour
 {
+
+    public bool IsFishing => isFishing;
+
     [Header("UI")]
     [SerializeField] private Slider catchSlider;
     [SerializeField] private Slider escapeSlider;
 
-    [Header("QTE Settings")]
-    [SerializeField] private float arrowSpeed = 2f;
-    [SerializeField] private float escapeDrainRate = 0.05f; // percent per second
+   [Header("QTE Settings (Base Values)")]
+   [SerializeField] private float arrowSpeed;
+    [SerializeField] private float baseArrowSpeed = 2f;
+    [SerializeField] private float baseEscapeDrainRate = 0.05f;
+    [SerializeField] private float escapeDrainRate;
+
+    [Header("QTE Difficulty Multipliers")]
+    [SerializeField] private float arrowSpeedPerDifficulty = 0.5f;
+    [SerializeField] private float escapeDrainPerDifficulty = 0.02f;
+    [SerializeField] private float greenRadiusPerDifficulty = -0.02f; // gets smaller
+
+    [Header("Catch Bar Settings")]
     [SerializeField] private float arrowMin = 0f;    // left-most
     [SerializeField] private float arrowMax = 1f;    // right-most
+
+    private float arrowValue = 0.5f;    // current arrow position (0–1)
+    private int arrowDirection = 1;     // 1 = right, -1 = left
     private Fish currentFish;
     private bool isFishing;
+
+    [Header("Catch Slider Visuals")]
+    [SerializeField] private Image catchSliderFill;   // the bar (optional)
+    [SerializeField] private Image catchHandleImage;  // the knob
+
 
     [Header("Catch Zones")]
     [SerializeField] private float greenCenter = 0.5f;   // middle of the bar
@@ -27,26 +47,54 @@ public class FishingManager : MonoBehaviour
     [SerializeField] private float yellowBonus = 0.15f;  // medium reward
     [SerializeField] private float missPenalty = -0.15f; // how much to subtract on bad timing
 
-
-private float arrowValue = 0.5f;  // current position of arrow on slider
-private int arrowDirection = 1;   // 1 = moving right, -1 = moving left
+    [SerializeField] private float bonusMultiplierPerDifficulty = -0.05f; // every level makes bonus smaller
+    [SerializeField] private float penaltyMultiplierPerDifficulty = 0.05f; // every level makes penalties harsher
 
     /// <summary>
     /// Begins the fishing QTE for the given fish.
     /// </summary>
     public void StartFishing(Fish fish)
     {
-        currentFish = fish;
+       currentFish = fish;
         isFishing = true;
+        int d = Mathf.Max(1, currentFish.QteDifficulty);
+
+        // Rewards get smaller as difficulty increases
+        greenBonus = 0.25f + bonusMultiplierPerDifficulty * (d - 1);
+        yellowBonus = 0.15f + bonusMultiplierPerDifficulty * (d - 1);
+
+        // Penalties get larger as difficulty increases
+        missPenalty = -0.15f - penaltyMultiplierPerDifficulty * (d - 1);
+
+        // Clamp to safe ranges (not too big, not too small)
+        greenBonus = Mathf.Clamp(greenBonus, 0.05f, 0.3f);
+        yellowBonus = Mathf.Clamp(yellowBonus, 0.02f, 0.2f);
+        missPenalty = Mathf.Clamp(missPenalty, -0.4f, -0.05f);
+
+        Debug.Log($"[FishingManager] Started fishing for {currentFish.Name} (Difficulty {currentFish.QteDifficulty})");
+
+        // Reset arrow position
         arrowValue = 0.5f;
         catchSlider.value = arrowValue;
 
-        // Debug message to verify we're starting the QTE
-        Debug.Log($"[FishingManager] Started fishing for {currentFish.Name}");
+        // Set escape bar start
+        escapeSlider.value = 0.9f;
 
-        // TODO: initialize sliders based on fish difficulty later
-        if (escapeSlider != null)
-            escapeSlider.value = 0.9f;
+        // ----- Apply difficulty scaling ----
+
+        // Arrow moves faster with higher difficulty
+        float arrowSpeed = baseArrowSpeed + arrowSpeedPerDifficulty * (d - 1);
+
+        // Escape drains faster with higher difficulty
+        escapeDrainRate = baseEscapeDrainRate + escapeDrainPerDifficulty * (d - 1);
+
+        // Green zone gets slightly smaller with higher difficulty
+        greenRadius = Mathf.Clamp(0.1f + greenRadiusPerDifficulty * (d - 1), 0.03f, 0.15f);
+
+        Debug.Log($"ArrowSpeed: {arrowSpeed}, EscapeDrain: {escapeDrainRate}, GreenRadius: {greenRadius}");
+
+        // Store local arrowSpeed into the field you already use in MoveArrow
+        this.arrowSpeed = arrowSpeed;
     }
 
     private void Update()
@@ -55,6 +103,7 @@ private int arrowDirection = 1;   // 1 = moving right, -1 = moving left
 
         MoveArrow();
         DrainEscapeOverTime();
+        UpdateZoneVisual();
 
         // When player presses Space, try to catch
         if (Input.GetKeyDown(KeyCode.Space))
@@ -161,4 +210,39 @@ private int arrowDirection = 1;   // 1 = moving right, -1 = moving left
 
         Debug.Log("The fish escaped...");
     }
+
+    private void UpdateZoneVisual()
+    {
+        // How far is the arrow from the center?
+        float distanceFromCenter = Mathf.Abs(arrowValue - greenCenter);
+
+        Color zoneColor;
+
+        if (distanceFromCenter <= greenRadius)
+        {
+            zoneColor = Color.green;
+        }
+        else if (distanceFromCenter <= yellowRadius)
+        {
+            zoneColor = Color.yellow;
+        }
+        else
+        {
+            zoneColor = Color.red;
+        }
+
+        // Apply the color to the bar fill (optional)
+        if (catchSliderFill != null)
+        {
+            catchSliderFill.color = zoneColor;
+        }
+
+        // Apply the color to the knob/handle
+        if (catchHandleImage != null)
+        {
+            catchHandleImage.color = zoneColor;
+        }
+    }
+
+
 }
