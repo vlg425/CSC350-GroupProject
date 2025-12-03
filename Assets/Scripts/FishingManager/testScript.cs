@@ -2,14 +2,44 @@ using UnityEngine;
 
 public class TestScript : MonoBehaviour
 {
+    private FishingManager fm;
+    private Fish easyFish;
+    private Fish mediumFish;
+    private Fish hardFish;
+
+    private void Awake()
+    {
+        fm = GetComponent<FishingManager>();
+
+        // Set up 3 example fish with different difficulties
+        easyFish = new Fish("Small Sardine", 10, 1, 1);
+        mediumFish = new Fish("Tuna", 50, 2, 2);
+        hardFish = new Fish("Legendary Whalefish", 200, 5, 3);
+    }
+
     private void Start()
     {
-        // Example of creating a test fish
-        Fish testFish = new Fish("Test Tuna", 50, 3, 2);
+        // Start with medium difficulty
+        fm.StartFishing(mediumFish);
+    }
 
-        // Get the FishingManager from the same GameObject
-        FishingManager fm = GetComponent<FishingManager>();
-
-        fm.StartFishing(testFish);
+    private void Update()
+    {
+        // If not currently fishing, allow restart
+        if (!fm.IsFishing)
+        {
+            if (Input.GetKeyDown(KeyCode.Alpha1))
+            {
+                fm.StartFishing(easyFish);
+            }
+            else if (Input.GetKeyDown(KeyCode.Alpha2))
+            {
+                fm.StartFishing(mediumFish);
+            }
+            else if (Input.GetKeyDown(KeyCode.Alpha3))
+            {
+                fm.StartFishing(hardFish);
+            }
+        }
     }
 }
