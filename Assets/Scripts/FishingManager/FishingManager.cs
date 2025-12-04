@@ -1,11 +1,14 @@
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 
 /// <summary>
 /// Controls the fishing Quick Time Event (QTE).
 /// </summary>
 public class FishingManager : MonoBehaviour
 {
+
+    [SerializeField] private GameObject inventoryItemPrefab;
 
     public bool IsFishing => isFishing;
 
@@ -196,13 +199,15 @@ public class FishingManager : MonoBehaviour
         }
     }
 
-    private void Success()
-    {
-        isFishing = false;
+   private void Success()
+{
+    isFishing = false;
 
-        Debug.Log($"Caught {currentFish.Name} worth {currentFish.Value} coins!");
-        // Later: Inventory.AddFish(currentFish);
-    }
+    Debug.Log($"Caught {currentFish.Name} worth {currentFish.Value} coins!");
+
+    InventoryItemSO fishSO = InventoryManager.Instance.GetItemByName(currentFish.Name);
+    GiveFishToInventory(fishSO);
+}
 
     private void Fail()
     {
@@ -243,6 +248,26 @@ public class FishingManager : MonoBehaviour
             catchHandleImage.color = zoneColor;
         }
     }
+    
+
+ private void GiveFishToInventory(InventoryItemSO data)
+{
+    if (data == null) return;
+
+    // Create a new inventory item object from prefab
+    GameObject newItemObj = Instantiate(inventoryItemPrefab, transform.root);
+
+    // Initialize the item with our ScriptableObject data
+    InventoryItem itemScript = newItemObj.GetComponent<InventoryItem>();
+    itemScript.Initialize(data);
+
+    // Fake a left mouse click so the inventory system picks it up automatically
+    PointerEventData fakeEvent = new PointerEventData(EventSystem.current);
+    fakeEvent.button = PointerEventData.InputButton.Left;
+
+    InventoryManager.Instance.OnItemClicked(itemScript, fakeEvent);
+}
+
 
 
 }
