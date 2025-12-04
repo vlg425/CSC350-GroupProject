@@ -6,6 +6,7 @@ public class SceneSwitcher : MonoBehaviour
     [SerializeField] GameObject externalInventoryUI;
     [SerializeField] GameObject fishingUI;
     [SerializeField] GameObject popupUI;
+    [SerializeField] GameObject fishingPopupUI;
     private void OnTriggerEnter2D(Collider2D collision)
     {
         Debug.Log("Trigger Hit!");
@@ -16,8 +17,7 @@ public class SceneSwitcher : MonoBehaviour
         }
         if (collision.CompareTag("FishNode"))
         {
-            fishingUI.SetActive(true);
-            externalInventoryUI.SetActive(true);
+            fishingPopupUI.SetActive(true);
 
         }
 

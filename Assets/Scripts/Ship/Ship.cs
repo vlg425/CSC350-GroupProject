@@ -4,7 +4,10 @@ public class Ship : MonoBehaviour
 {
     [SerializeField] GameObject playerInventoryUI;
     [SerializeField] GameObject externalInventoryUI;
+    [SerializeField] GameObject fishingUI;
     public GameObject popUpPanel;
+    
+    public GameObject FishingPopUpPanel;
     public float moveSpeed = 5f;
     public float rotationSpeed = 1f;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -16,7 +19,8 @@ public class Ship : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (!(popUpPanel.activeSelf||playerInventoryUI.activeSelf))
+        shipMovement();
+        if (!(popUpPanel.activeSelf||playerInventoryUI.activeSelf||FishingPopUpPanel.activeSelf))
             shipMovement();
         if (Input.GetKeyDown(KeyCode.F))
         {
@@ -28,6 +32,7 @@ public class Ship : MonoBehaviour
                 transform.SetPositionAndRotation(newPosition, newRotation);
                 externalInventoryUI.SetActive(false);
                 playerInventoryUI.SetActive(false);
+                fishingUI.SetActive(false);
             }
         }
     }
@@ -56,6 +61,8 @@ public class Ship : MonoBehaviour
         {
             transform.Rotate(0, 0, -rotationSpeed);
         }
+
+        
     }
 
 

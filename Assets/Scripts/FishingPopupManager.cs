@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class PopupManager : MonoBehaviour
+public class FishingPopupManager : MonoBehaviour
 {
     // Reference to the Pop-Up Panel GameObject
     public GameObject popUpPanel;
@@ -49,9 +49,10 @@ public class PopupManager : MonoBehaviour
     // The function that moves ship to empty place with inventories open
     public void openInventory()
     {
-        Debug.Log("Key pressed! Executing code");
+        Debug.Log("Key pressed! Executing fishing code");
         playerInventoryUI.SetActive(true);
         externalInventoryUI.SetActive(true);
+        fishingUI.SetActive(true);
         Vector3 newPosition = new(-1040f, -603f, 0f);
         Quaternion newRotation = Quaternion.Euler(0f, 0f, 0f);
         Ship.transform.SetPositionAndRotation(newPosition, newRotation);
