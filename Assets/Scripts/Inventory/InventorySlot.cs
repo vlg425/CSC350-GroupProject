@@ -7,7 +7,7 @@ public class InventorySlot : MonoBehaviour, IPointerClickHandler, IPointerEnterH
     private Inventory inventory;
     private Image img;
     private Color baseColor;
-    public InventoryItem currentItem; // What is inside me right now?
+    public InventoryItem currentItem; 
 
     public void Initialize(Inventory inv, int x, int y)
     {
@@ -16,16 +16,12 @@ public class InventorySlot : MonoBehaviour, IPointerClickHandler, IPointerEnterH
         baseColor = img.color;
     }
 
-    public void OnPointerClick(PointerEventData d) 
-    {
-        if (d.button == PointerEventData.InputButton.Left) 
-            InventoryManager.Instance.OnSlotClicked(inventory);
+    public void OnPointerClick(PointerEventData d) {
+        if (d.button == PointerEventData.InputButton.Left) InventoryManager.Instance.OnSlotClicked(inventory);
     }
 
-    // IMPORTANT: We pass 'this' (the slot itself) so the Manager knows EXACTLY which slot is hovered.
-    public void OnPointerEnter(PointerEventData d) => InventoryManager.Instance.OnSlotEnter(inventory, this);
-    
-    public void OnPointerExit(PointerEventData d) => InventoryManager.Instance.OnSlotExit(inventory, this);
+    public void OnPointerEnter(PointerEventData d) => InventoryManager.Instance.OnSlotEnter(inventory);
+    public void OnPointerExit(PointerEventData d) => InventoryManager.Instance.OnSlotExit(inventory);
 
     public void SetColor(Color c) => img.color = c;
     public void ResetColor() => img.color = baseColor;
