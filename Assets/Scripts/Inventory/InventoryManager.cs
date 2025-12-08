@@ -293,6 +293,11 @@ public class InventoryManager : MonoBehaviour
         return null;
     }
 
+    public InventoryItemSO GetItemByName(string name)
+    {
+        return itemDatabase.Find(i => i.name == name); 
+    }
+
     public bool IsHoldingItem() => heldItem != null;
     public InventoryItem GetHeldItem() => heldItem;
 }
