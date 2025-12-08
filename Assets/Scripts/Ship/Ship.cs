@@ -2,40 +2,23 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 public class Ship : MonoBehaviour
 {
-    [SerializeField] GameObject playerInventoryUI;
-    [SerializeField] GameObject externalInventoryUI;
-    [SerializeField] GameObject fishingUI;
-    public GameObject popUpPanel;
-    
-    public GameObject FishingPopUpPanel;
     public float moveSpeed = 5f;
     public float rotationSpeed = 1f;
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        Debug.Log("Ship!");
-    }
 
     // Update is called once per frame
     void Update()
     {
-        shipMovement();
-        if (!(popUpPanel.activeSelf||playerInventoryUI.activeSelf||FishingPopUpPanel.activeSelf))
-            shipMovement();
-        if (Input.GetKeyDown(KeyCode.F))
+            if (GameManager.Instance.CurrentState != GameState.Sailing)
         {
-            if (externalInventoryUI.activeSelf)
-            {
-                Debug.Log("F Key pressed! Executing code");
-                Vector3 newPosition = new(0f, 0f, 0f);
-                Quaternion newRotation = Quaternion.Euler(0f, 0f, 0f);
-                transform.SetPositionAndRotation(newPosition, newRotation);
-                externalInventoryUI.SetActive(false);
-                playerInventoryUI.SetActive(false);
-                fishingUI.SetActive(false);
-            }
+            return;
         }
+        else
+        {
+            shipMovement();
+        }
+              
     }
+    
     void shipMovement()
     {
         // Move forward with 'W' key
