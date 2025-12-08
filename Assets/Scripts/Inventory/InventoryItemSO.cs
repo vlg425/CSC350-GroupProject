@@ -11,7 +11,13 @@ public class InventoryItemSO : ScriptableObject
     public Sprite icon;
     public Color color = Color.white; 
 
+    [Header("Economy & Info")]
+    [TextArea(4, 4)] public string description; // Shown in tooltip
+    public int buyPrice = 10;  
+    public int sellPrice = 5;  
+
     [Header("Shape Definition")]
-    [Tooltip("Check the box for Solid, Uncheck for Empty. Index = Row * Width + Col")]
+    // Checked = Solid, Unchecked = Empty Space
+    [Tooltip("Check the box for Solid, Uncheck for Empty.")]
     public bool[] shape; 
 }
