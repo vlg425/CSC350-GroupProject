@@ -7,6 +7,10 @@ using UnityEngine.EventSystems;
 /// </summary>
 public class FishingManager : MonoBehaviour
 {
+[Header("Zone Strips")]
+[SerializeField] private RectTransform redZoneRect;
+[SerializeField] private RectTransform yellowZoneRect;
+[SerializeField] private RectTransform greenZoneRect;
 
     [SerializeField] private GameObject inventoryItemPrefab;
 
@@ -98,13 +102,16 @@ public class FishingManager : MonoBehaviour
 
         // Store local arrowSpeed into the field you already use in MoveArrow
         this.arrowSpeed = arrowSpeed;
+
+// Resize the colored strips to match current difficulty
+UpdateZoneStrips();
     }
 
     private void Update()
     {
         if (!isFishing) return;
 
-        MoveArrow();
+        MoveArrow();    
         DrainEscapeOverTime();
         UpdateZoneVisual();
 
@@ -199,6 +206,50 @@ public class FishingManager : MonoBehaviour
         }
     }
 
+private void UpdateZoneStrips()
+{
+    if (catchSlider == null) return;
+
+    // We'll use "radius" as a fraction of the bar from the center.
+    // greenRadius / yellowRadius should always be <= 0.5f
+
+    float barHeight = 10f; // or whatever looks good for the strip height
+
+    // ---- RED: full bar background (0..1) ----
+    if (redZoneRect != null)
+    {
+        redZoneRect.anchorMin = new Vector2(0f, 0.5f);
+        redZoneRect.anchorMax = new Vector2(1f, 0.5f);
+        redZoneRect.offsetMin = new Vector2(0f, -barHeight * 0.5f);
+        redZoneRect.offsetMax = new Vector2(0f,  barHeight * 0.5f);
+    }
+
+    // ---- YELLOW: centered band around the middle (uses yellowRadius) ----
+    if (yellowZoneRect != null)
+    {
+        float minX = 0.5f - yellowRadius;  // left side of yellow
+        float maxX = 0.5f + yellowRadius;  // right side of yellow
+
+        yellowZoneRect.anchorMin = new Vector2(minX, 0.5f);
+        yellowZoneRect.anchorMax = new Vector2(maxX, 0.5f);
+        yellowZoneRect.offsetMin = new Vector2(0f, -barHeight * 0.5f);
+        yellowZoneRect.offsetMax = new Vector2(0f,  barHeight * 0.5f);
+    }
+
+    // ---- GREEN: smaller center band (uses greenRadius) ----
+    if (greenZoneRect != null)
+    {
+        float minX = 0.5f - greenRadius;
+        float maxX = 0.5f + greenRadius;
+
+        greenZoneRect.anchorMin = new Vector2(minX, 0.5f);
+        greenZoneRect.anchorMax = new Vector2(maxX, 0.5f);
+        greenZoneRect.offsetMin = new Vector2(0f, -barHeight * 0.5f);
+        greenZoneRect.offsetMax = new Vector2(0f,  barHeight * 0.5f);
+    }
+}
+
+
    private void Success()
 {
     isFishing = false;
@@ -213,7 +264,7 @@ public class FishingManager : MonoBehaviour
     {
         isFishing = false;
 
-        Debug.Log("The fish escaped...");
+        Debug.Log("The fish escaped..."); 
     }
 
     private void UpdateZoneVisual()
