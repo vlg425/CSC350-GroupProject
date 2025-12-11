@@ -17,6 +17,6 @@ MonoBehaviour:
   icon: {fileID: 21300000, guid: bd26a2a04b9d47d4f97a99eebc0856bc, type: 3}
   color: {r: 0.8238993, g: 0.60586834, b: 0.3497685, a: 1}
   description: Fishing Rod
-  buyPrice: 10
-  sellPrice: 5
+  buyPrice: 50
+  sellPrice: 30
   shape: 01010100
