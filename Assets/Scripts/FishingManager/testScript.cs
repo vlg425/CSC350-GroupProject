@@ -28,15 +28,15 @@ public class TestScript : MonoBehaviour
         // If not currently fishing, allow restart
         if (!fm.IsFishing)
         {
-            if (Input.GetKeyDown(KeyCode.Alpha6))
+            if (Input.GetKeyDown(KeyCode.Alpha7))
             {
                 fm.StartFishing(easyFish);
             }
-            else if (Input.GetKeyDown(KeyCode.Alpha7))
+            else if (Input.GetKeyDown(KeyCode.Alpha8))
             {
                 fm.StartFishing(mediumFish);
             }
-            else if (Input.GetKeyDown(KeyCode.Alpha8))
+            else if (Input.GetKeyDown(KeyCode.Alpha9))
             {
                 fm.StartFishing(hardFish);
             }

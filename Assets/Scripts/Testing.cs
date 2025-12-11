@@ -19,6 +19,7 @@ public class Testing : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Alpha3)) SpawnItem(2);
         if (Input.GetKeyDown(KeyCode.Alpha4)) SpawnItem(3);
         if (Input.GetKeyDown(KeyCode.Alpha5)) SpawnItem(4);
+        if (Input.GetKeyDown(KeyCode.Alpha6)) SpawnItem(5);
 
         if (Input.GetKeyDown(KeyCode.R)) SpawnItem(Random.Range(0, debugItems.Count));
 

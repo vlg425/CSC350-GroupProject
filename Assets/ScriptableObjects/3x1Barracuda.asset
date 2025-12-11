@@ -10,13 +10,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1e6a596f90560b345a68aa4d55f8d94f, type: 3}
-  m_Name: 1x1squareItem
+  m_Name: 3x1Barracuda
   m_EditorClassIdentifier: Assembly-CSharp::InventoryItemSO
-  width: 1
+  width: 3
   height: 1
-  icon: {fileID: 21300000, guid: 073da2affa35ff248a90cac2362d9f9d, type: 3}
-  color: {r: 1, g: 0.4035101, b: 0, a: 1}
-  description: 
+  icon: {fileID: 21300000, guid: 9f0cf827580548c419180e48e2f568a5, type: 3}
+  color: {r: 0.24039775, g: 0.71299785, b: 0.899371, a: 1}
+  description: 3x1 rectangle fish
   buyPrice: 10
   sellPrice: 5
-  shape: 01
+  shape: 010101

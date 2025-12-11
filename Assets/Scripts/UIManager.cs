@@ -19,6 +19,7 @@ public class UIManager : MonoBehaviour
         externalInventoryUI.SetActive(false);
         fishingMinigameUI.SetActive(false);
         interactionPopup.SetActive(false);
+        fishingInventoryUI.SetActive(false);
     }
 
     // Defines the "Sailing" visual state

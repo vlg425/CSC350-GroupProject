@@ -10,13 +10,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1e6a596f90560b345a68aa4d55f8d94f, type: 3}
-  m_Name: 2x2SquareItem
+  m_Name: 2x1Crab
   m_EditorClassIdentifier: Assembly-CSharp::InventoryItemSO
   width: 2
-  height: 2
-  icon: {fileID: 21300000, guid: ddbb5f91c0d1ec740a477ed2b25063e2, type: 3}
-  color: {r: 1, g: 0.6478337, b: 0, a: 1}
-  description: 2x2 square item
-  buyPrice: 50
-  sellPrice: 25
-  shape: 01010101
+  height: 1
+  icon: {fileID: 21300000, guid: 9367be35c0b8a794eb22086c3785b254, type: 3}
+  color: {r: 0.8553459, g: 0.26090726, b: 0.26090726, a: 1}
+  description: Crab
+  buyPrice: 10
+  sellPrice: 5
+  shape: 0101
