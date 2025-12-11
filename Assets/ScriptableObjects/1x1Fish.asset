@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::InventoryItemSO
   width: 1
   height: 1
-  icon: {fileID: 4555197231083329837, guid: e8d84a016bc171348b53a7868eea7d32, type: 3}
+  icon: {fileID: 21300000, guid: e8d84a016bc171348b53a7868eea7d32, type: 3}
   color: {r: 1, g: 0.67009616, b: 0, a: 1}
   description: Fish
   buyPrice: 10
