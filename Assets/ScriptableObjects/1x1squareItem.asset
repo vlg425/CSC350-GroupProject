@@ -10,13 +10,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1e6a596f90560b345a68aa4d55f8d94f, type: 3}
-  m_Name: 3x1RectangleFish
+  m_Name: 1x1squareItem
   m_EditorClassIdentifier: Assembly-CSharp::InventoryItemSO
-  width: 3
+  width: 1
   height: 1
-  icon: {fileID: 21300000, guid: 1980c01e2ed27cf4db52e25cec482700, type: 3}
-  color: {r: 0.28948608, g: 0.6610808, b: 0.7484276, a: 1}
-  description: 3x1 rectangle fish
+  icon: {fileID: 21300000, guid: 073da2affa35ff248a90cac2362d9f9d, type: 3}
+  color: {r: 1, g: 0.4035101, b: 0, a: 1}
+  description: 
   buyPrice: 10
   sellPrice: 5
-  shape: 010101
+  shape: 01

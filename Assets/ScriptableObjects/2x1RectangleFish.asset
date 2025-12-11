@@ -18,5 +18,5 @@ MonoBehaviour:
   color: {r: 0, g: 0.99004865, b: 1, a: 1}
   description: 2x1 fish
   buyPrice: 20
-  sellPrice: 20
+  sellPrice: 10
   shape: 0101

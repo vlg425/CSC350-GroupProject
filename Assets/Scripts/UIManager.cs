@@ -5,6 +5,7 @@ public class UIManager : MonoBehaviour
     [Header("Panels")]
     public GameObject hudPanel;           // Minimap, HP, etc.
     public GameObject playerInventoryUI;
+    public GameObject fishingInventoryUI;
     public GameObject externalInventoryUI; // The Shop or Crate
     public GameObject fishingMinigameUI;
     public GameObject interactionPopup;    // "Press Space" prompt
@@ -32,6 +33,7 @@ public class UIManager : MonoBehaviour
     {
         CloseAll();
         playerInventoryUI.SetActive(true);
+        fishingInventoryUI.SetActive(true);
         fishingMinigameUI.SetActive(true);
     }
 
