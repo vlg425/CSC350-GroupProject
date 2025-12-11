@@ -1709,7 +1709,19 @@ MonoBehaviour:
   inventoryItemPrefab: {fileID: 5975752968153702773, guid: b15cb5d7b74bf5848afb14ddd2e20cbb, type: 3}
   slotsContainer: {fileID: 1460397255}
   itemsContainer: {fileID: 702276812}
-  startingItems: []
+  startingItems:
+  - item: {fileID: 11400000, guid: 882c027d1dfa0984c870d2125fb218e1, type: 2}
+    x: 4
+    y: 2
+    rotation: 0
+  - item: {fileID: 11400000, guid: 31ae7e13e8a1d41428006d82943a85cc, type: 2}
+    x: 2
+    y: 3
+    rotation: 0
+  - item: {fileID: 11400000, guid: 913eaa89b12b0e44ea0103a7c8e29774, type: 2}
+    x: 3
+    y: 4
+    rotation: 0
 --- !u!114 &854954919
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4462,11 +4474,12 @@ MonoBehaviour:
   itemPrefab: {fileID: 5975752968153702773, guid: b15cb5d7b74bf5848afb14ddd2e20cbb, type: 3}
   inventoryUI: {fileID: 281356678}
   debugItems:
-  - {fileID: 11400000, guid: 96f646b2262a7f74a8472d4a99b58d5d, type: 2}
+  - {fileID: 11400000, guid: 7a9676d7f6787144fb624c3caca310af, type: 2}
+  - {fileID: 11400000, guid: 728678293e395f240965576c72e72ea9, type: 2}
+  - {fileID: 11400000, guid: 45f9b0da81b35d841bbef70c8f851714, type: 2}
+  - {fileID: 11400000, guid: 0e6c32820b2fbe34aa9a4f89b0a50ded, type: 2}
+  - {fileID: 11400000, guid: c441834acd1020048908d163d9398735, type: 2}
   - {fileID: 11400000, guid: 7b613d545d5ae204ba3588b48f8433bf, type: 2}
-  - {fileID: 11400000, guid: 90158cefa1567074f8e3f54e07b5fd9a, type: 2}
-  - {fileID: 11400000, guid: 5dee52389a673324b81f92c424eba3f7, type: 2}
-  - {fileID: 11400000, guid: 7965eb39c4e156c4db3fd98084e032e1, type: 2}
   fishItem: {fileID: 0}
 --- !u!1 &1951478630
 GameObject:
