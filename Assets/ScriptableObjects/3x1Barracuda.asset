@@ -17,6 +17,6 @@ MonoBehaviour:
   icon: {fileID: 21300000, guid: 9f0cf827580548c419180e48e2f568a5, type: 3}
   color: {r: 0.24039775, g: 0.71299785, b: 0.899371, a: 1}
   description: 3x1 rectangle fish
-  buyPrice: 10
-  sellPrice: 5
+  buyPrice: 40
+  sellPrice: 25
   shape: 010101

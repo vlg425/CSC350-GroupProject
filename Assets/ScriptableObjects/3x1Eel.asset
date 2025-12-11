@@ -17,6 +17,6 @@ MonoBehaviour:
   icon: {fileID: 21300000, guid: 730e46dceba16cb4c992508f43686d91, type: 3}
   color: {r: 0.5532266, g: 0.3756773, b: 0.8238993, a: 1}
   description: 
-  buyPrice: 10
-  sellPrice: 5
+  buyPrice: 50
+  sellPrice: 35
   shape: 010101

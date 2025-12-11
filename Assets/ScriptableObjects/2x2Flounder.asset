@@ -17,6 +17,6 @@ MonoBehaviour:
   icon: {fileID: 21300000, guid: 805bae45fa65fea44818efe81541af18, type: 3}
   color: {r: 0.75923896, g: 0.9622642, b: 0.28141674, a: 1}
   description: Flounder
-  buyPrice: 10
-  sellPrice: 5
+  buyPrice: 30
+  sellPrice: 20
   shape: 01010101

@@ -17,6 +17,6 @@ MonoBehaviour:
   icon: {fileID: 21300000, guid: 3d4805a1d18ae864092961c3a1d64e88, type: 3}
   color: {r: 0.6226415, g: 0.6226415, b: 0.6226415, a: 1}
   description: Engine
-  buyPrice: 10
-  sellPrice: 5
+  buyPrice: 100
+  sellPrice: 50
   shape: 0101

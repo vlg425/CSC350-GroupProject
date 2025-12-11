@@ -17,6 +17,6 @@ MonoBehaviour:
   icon: {fileID: 21300000, guid: 9367be35c0b8a794eb22086c3785b254, type: 3}
   color: {r: 0.8553459, g: 0.26090726, b: 0.26090726, a: 1}
   description: Crab
-  buyPrice: 10
-  sellPrice: 5
+  buyPrice: 25
+  sellPrice: 15
   shape: 0101

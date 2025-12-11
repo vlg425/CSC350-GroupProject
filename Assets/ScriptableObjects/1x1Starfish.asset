@@ -17,6 +17,6 @@ MonoBehaviour:
   icon: {fileID: 21300000, guid: 383926662dc8c134293f57c76996e890, type: 3}
   color: {r: 0.9685534, g: 0.9450904, b: 0.362446, a: 1}
   description: Starfish
-  buyPrice: 10
-  sellPrice: 5
+  buyPrice: 15
+  sellPrice: 10
   shape: 01
